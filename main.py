@@ -12,10 +12,9 @@ def ingest(request: Dict[str, Union[int, str]]):
         response_code = 200
 
 
-
-
-def retrieve():
-    pass
+def retrieve(request: Dict[str, str]):
+    date_from = request["Date_from"]
+    date_to = request["Date_to"]
 
 
 if __name__ == "__main__":
