@@ -1,3 +1,8 @@
+# region urls
+URL_INGEST = "/api/v1/ingest"
+URL_RETRIEVE = "/api/v1/retrieve"
+# endregion
+
 # region ingest
 KEY = "key"
 PAYLOAD = "payload"
