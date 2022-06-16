@@ -57,6 +57,18 @@ def retrieve(request: Dict[str, str]):
     date_from = request[cf.DATE_FROM]
     date_to = request[cf.DATE_TO]
 
+    # ToDo convertire le date da stringa a ISO
+
+    # ToDo aggiungere 1 minuto a date_to per una ricerca corretta
+
+    retrieved_info = database[cf.SERVER_TAB].find({"$lt": date_to, "$gte": date_from})
+
+    # ToDo "arrotondare" le date di retrieved_info al minuto precedente
+
+    # ToDo aggregare retrieved_info per minuti e per chiavi, mantenendo info sul totale di richieste e sugli errori
+
+    return retrieved_info
+
 
 if __name__ == "__main__":
     # import uvicorn
