@@ -31,15 +31,6 @@ RET_OUT_TOTAL_REQUESTS = "total_requests"
 RET_OUT_TOTAL_ERRORS = "total_errors"
 # endregion
 
-# region mongodb
-DATABASE = "test_tecnico"
-USERNAME = "test_tecnico"
-PASSWORD = "test_tecnico_123"
-HOST = "cluster0.8jbqvyu.mongodb.net/?retryWrites=true&w=majority"
-CONNECTION_STRING = f"mongodb+srv://{USERNAME}:{PASSWORD}@{HOST}"
-COLLECTION = "test_tecnico"
-# endregion
-
 # region local machine
 MY_IP = "localhost"
 MY_PORT = 8000
@@ -51,4 +42,13 @@ QUERY_GROUP = "$group"
 QUERY_SUM = "$sum"
 QUERY_LESSER_THAN = "$lt"
 QUERY_GREATER_EQUAL = "$gte"
+# endregion
+
+# region mongodb server
+DATABASE = "test_tecnico"
+USERNAME = "test_tecnico"
+PASSWORD = "test_tecnico_123"
+HOST = "cluster0.8jbqvyu.mongodb.net/?retryWrites=true&w=majority"
+CONNECTION_STRING = f"mongodb+srv://{USERNAME}:{PASSWORD}@{HOST}"
+COLLECTION = "test_tecnico"
 # endregion
