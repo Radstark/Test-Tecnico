@@ -6,6 +6,8 @@ Per avviare il test è sufficiente avviare il file main.py con il comando seguen
 <python/python3> main.py
 ```
 
+La versione di Python usata è la 3.10. I package necessari sono indicati nel file requirements.txt.
+
 ## Configurazione
 
 Il file config.py funge da file di configurazione, con tutte le costanti necessarie. È diviso per regioni. Contiene anche i parametri relativi al server, che si trovano in fondo al file: nome del database e della collection, la tripletta host, username e password, e la stringa di connessione.
