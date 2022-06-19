@@ -1,9 +1,7 @@
 import datetime
 import random
 import time
-from typing import Dict, Union
 
-from dateutil import parser as date_parser
 from fastapi import FastAPI
 from pydantic import BaseModel
 
@@ -15,6 +13,7 @@ app = FastAPI()
 database = create_database()
 
 
+# region classes
 class IngestionData(BaseModel):
     key: int
     payload: str
@@ -23,8 +22,10 @@ class IngestionData(BaseModel):
 class RetrievalData(BaseModel):
     Date_from: str
     Date_to: str
+# endregion
 
 
+# region requests
 @app.post(cf.URL_INGEST)
 def ingest(data: IngestionData):
     """
@@ -32,9 +33,6 @@ def ingest(data: IngestionData):
     200 all other times. Takes anywhere between 10 ms and 50 ms, at random.
     :param data: class containing an integer key and a string payload.
     """
-
-    print(data)
-
     beginning = time.time()
     creation_datetime = datetime.datetime.now()
     key = data.key
@@ -42,22 +40,25 @@ def ingest(data: IngestionData):
 
     if random.randrange(1, 11) == 1:
         response_code = 500
+        is_error = 1
     else:
         response_code = 200
+        is_error = 0
 
     response_time = random.randrange(10, 51)
 
     time.sleep((response_time + time.time() - beginning) / 1000)
 
     database[cf.COLLECTION].insert_one({
-        cf.OUT_CREATION_DATETIME: creation_datetime.isoformat(),
-        cf.PAYLOAD: payload,
-        cf.OUT_RESPONSE_TIME: response_time,
-        # cf.OUT_CREATION_ROUNDED: creation_datetime - datetime.timedelta(minutes=creation_datetime.minute % 10,
-        #                                                                 seconds=creation_datetime.second,
-        #                                                                 microseconds=creation_datetime.microsecond),
-        cf.OUT_RESPONSE_CODE: response_code,
-        cf.OUT_KEY: key
+        cf.ING_OUT_CREATION_DATETIME: creation_datetime,
+        cf.ING_OUT_PAYLOAD: payload,
+        cf.ING_OUT_RESPONSE_TIME: response_time,
+        cf.ING_OUT_RESPONSE_CODE: response_code,
+        cf.ING_OUT_KEY: key,
+        cf.ING_OUT_CREATION_ROUNDED: creation_datetime - datetime.timedelta(minutes=creation_datetime.minute % 1,
+                                                                            seconds=creation_datetime.second,
+                                                                            microseconds=creation_datetime.microsecond),
+        cf.ING_OUT_IS_ERROR: is_error
     })
 
     return {
@@ -69,24 +70,50 @@ def ingest(data: IngestionData):
 @app.get(cf.URL_RETRIEVE)
 def retrieve(data: RetrievalData):
     """
-    Retrieves data inserted from a given date to a given date.
+    Retrieves data inserted from a given date to a given date, grouping it by key and rounded creation date, and
+    adding information about total time taken for each key-date pair, total requests for each key-date pair, and total
+    errors for each key-date pair.
+    Result is then reformatted for better readability, separating the key-value pair into the first and last keys.
     :param data: class containing two dates as strings.
     """
-    date_from = data.Date_from
-    date_to = data.Date_to
+    date_from = datetime.datetime.fromisoformat(data.Date_from)
+    date_to = datetime.datetime.fromisoformat(data.Date_to)
 
-    date_from = date_parser.parse(date_from)
-    date_to = date_parser.parse(date_to) + datetime.timedelta(minutes=1)
+    results = database[cf.COLLECTION].aggregate([{
+        cf.QUERY_MATCH: {
+            cf.ING_OUT_CREATION_DATETIME:
+                {cf.QUERY_LESSER_THAN: date_to, cf.QUERY_GREATER_EQUAL: date_from}
+        }
+    }, {
+        cf.QUERY_GROUP: {
+            "_id": {
+                cf.RET_OUT_KEY: f"${cf.ING_OUT_KEY}",
+                cf.RET_OUT_CREATION_DATE: f"${cf.ING_OUT_CREATION_ROUNDED}"
+            },
+            cf.RET_OUT_TOTAL_TIME: {cf.QUERY_SUM: f"${cf.ING_OUT_RESPONSE_TIME}"},
+            cf.RET_OUT_TOTAL_REQUESTS: {cf.QUERY_SUM: 1},
+            cf.RET_OUT_TOTAL_ERRORS: {cf.QUERY_SUM: f"${cf.ING_OUT_IS_ERROR}"}
+        }
+    }])
 
-    retrieved_info = database[cf.COLLECTION].find({cf.OUT_CREATION_ROUNDED: {"$lt": date_to, "$gte": date_from}})
+    to_return = []
+    for result in results:
+        to_return.append({
+            cf.RET_OUT_KEY: result["_id"][cf.RET_OUT_KEY],
+            cf.RET_OUT_TOTAL_TIME: result[cf.RET_OUT_TOTAL_TIME],
+            cf.RET_OUT_TOTAL_REQUESTS: result[cf.RET_OUT_TOTAL_REQUESTS],
+            cf.RET_OUT_TOTAL_ERRORS: result[cf.RET_OUT_TOTAL_ERRORS],
+            cf.RET_OUT_CREATION_DATE: result["_id"][cf.RET_OUT_CREATION_DATE]
+        })
 
-    print(retrieved_info)
+    to_return = list(sorted(sorted(to_return, key=lambda d: d[cf.RET_OUT_KEY]),
+                            key=lambda d: d[cf.RET_OUT_CREATION_DATE]))
 
-    retrieved_info = retrieved_info.aggregate([{"$count": cf.OUT_CREATION_ROUNDED}])
-
-    # ToDo aggregare retrieved_info per minuti e per chiavi, mantenendo info sul totale di richieste e sugli errori
-
-    return retrieved_info
+    return {
+        "status": 200,
+        "msg": to_return
+    }
+# endregion
 
 
 if __name__ == "__main__":
