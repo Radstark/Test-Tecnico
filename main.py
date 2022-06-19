@@ -102,8 +102,6 @@ def retrieve(data: RetrievalData):
         "status": 200,
         "msg": to_return
     }
-
-
 # endregion
 
 
