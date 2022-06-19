@@ -3,25 +3,14 @@ import random
 import time
 
 from fastapi import FastAPI
-from pydantic import BaseModel
 
 import config as cf
-from database import create_database
+from database import create_database, IngestionData, RetrievalData
 
+# region initialization
 app = FastAPI()
 
 database = create_database()
-
-
-# region classes
-class IngestionData(BaseModel):
-    key: int
-    payload: str
-
-
-class RetrievalData(BaseModel):
-    Date_from: str
-    Date_to: str
 # endregion
 
 
@@ -113,6 +102,8 @@ def retrieve(data: RetrievalData):
         "status": 200,
         "msg": to_return
     }
+
+
 # endregion
 
 
