@@ -4,5 +4,5 @@ import config as cf
 
 
 def create_database():
-    client = MongoClient(cf.CLIENT_LOGIN)
+    client = MongoClient(cf.CONNECTION_STRING)
     return client[cf.DATABASE]

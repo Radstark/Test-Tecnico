@@ -10,6 +10,7 @@ PAYLOAD = "payload"
 
 # region ingestion output
 OUT_CREATION_DATETIME = "Creation_datetime"
+OUT_CREATION_ROUNDED = "Creation_time_rounded"
 OUT_PAYLOAD = "Payload"
 OUT_RESPONSE_TIME = "Response_time"
 OUT_RESPONSE_CODE = "Response_code"
@@ -22,10 +23,15 @@ DATE_TO = "Date_to"
 # endregion
 
 # region mongodb
-DATABASE = ""
-USERNAME = ""
-PASSWORD = ""
-HOST = ""
-CLIENT_LOGIN = f"mongodb://{USERNAME}:{PASSWORD}@{HOST}"
-SERVER_TAB = ""
+DATABASE = "test_tecnico"
+USERNAME = "test_tecnico"
+PASSWORD = "test_tecnico_123"
+HOST = "cluster0.8jbqvyu.mongodb.net/?retryWrites=true&w=majority"
+CONNECTION_STRING = f"mongodb+srv://{USERNAME}:{PASSWORD}@{HOST}"
+COLLECTION = "test_tecnico"
+# endregion
+
+# region local machine
+MY_IP = "localhost"
+MY_PORT = 8000
 # endregion
